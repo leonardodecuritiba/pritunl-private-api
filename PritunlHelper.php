@@ -65,8 +65,6 @@ class PritunlHelper
             ]
         ]);
 
-        dd($req);
-
         if ($req->getStatusCode() == 401) {
             //            Log::error('Pritunl login info is wrong !!!');
         }

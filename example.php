@@ -1,5 +1,5 @@
 <?php
-$BASE_URL = 'https://server.domain';
+$BASE_URL = 'https://redeprivada.tec.br:7443';
 $API_TOKEN = 'Hv2FxEMoa3moTVuRahMsMK3VUCwdmjmt';
 $API_SECRET = 'zihea5hTIpIgxsPFboby4hctopxWQSKd';
 $SERVER_ID = '57e9e364fd632c233e86f827';
@@ -8,6 +8,7 @@ function auth_request($method, $path, $headers = [], $data = null)
 {
 	global $BASE_URL, $API_TOKEN, $API_SECRET;
 
+	$url = $BASE_URL . $path;
 	$auth_timestamp = time();
 	$auth_nonce = bin2hex(random_bytes(16));
 	$auth_string = implode('&', [$API_TOKEN, $auth_timestamp, $auth_nonce, strtoupper($method), $path]);
@@ -28,10 +29,20 @@ function auth_request($method, $path, $headers = [], $data = null)
 			'method' => $method,
 			'content' => $data,
 		],
+		'ssl' => [
+			'verify_peer' => false,
+			'verify_peer_name' => false,
+		]
 	];
 
 	$context = stream_context_create($options);
-	return file_get_contents($BASE_URL . $path, false, $context);
+	$result = file_get_contents($url, false, $context);
+
+	if ($result === FALSE) {
+		throw new Exception("Request failed: ");
+	}
+
+	return $result;
 }
 
 $ORGANIZATION_ID = 1;
