@@ -1,0 +1,24 @@
+{
+    "name": "api-pritunl/api-pritunl",
+    "type": "project",
+	"author": "Your Name",
+    "description": "My project",
+    "keywords": ["framework", "laravel"],
+    "license": "MIT",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+	"version": "1.0.0",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"require": {
+		"guzzlehttp/guzzle": "^7.5.0",
+		"guzzlehttp/promises": "^1.5.2",
+		"guzzlehttp/psr7": "^2.4.4",
+		"psr/http-client": "^1.0.1",
+		"psr/http-factory": "^1.0.1",
+		"psr/http-message": "^1.0.1",
+		"ralouphie/getallheaders": "^3.0.3",
+		"symfony/deprecation-contracts": "^3.2.1"
+	}
+}
