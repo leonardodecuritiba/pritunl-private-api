@@ -9,14 +9,14 @@ class PritunlHelper
 {
     public static function get_instance($data)
     {
-        return new self($data['username'],$data['password'],$data['base_url'],$data['url']);
+        return new self($data['username'], $data['password'], $data['base_url'], $data['url']);
     }
 
-    private $username,$password,$url,$session,$csrf,$cookie_url;
+    private $username, $password, $url, $session, $csrf, $cookie_url;
 
     private $client;
 
-    public function __construct($username,$password,$url,$cookie_url)
+    public function __construct($username, $password, $url, $cookie_url)
     {
         $this->username = $username;
         $this->password = $password;
@@ -30,34 +30,34 @@ class PritunlHelper
     public function load_session()
     {
         try {
-            return file_get_contents(__DIR__.'/session.txt');
-        }catch (\Exception $e){
+            return file_get_contents(__DIR__ . '/session.txt');
+        } catch (\Exception $e) {
             return null;
         }
     }
 
     public function store_session($session)
     {
-        file_put_contents(__DIR__.'/session.txt',$session);
+        file_put_contents(__DIR__ . '/session.txt', $session);
     }
 
     public function check_auth()
     {
-        if (!$this->getCSRF()){
+        if (!$this->getCSRF()) {
             $this->login();
         }
     }
 
     public function get_full_url($endpoint)
     {
-        return $this->url.$endpoint;
+        return $this->url . $endpoint;
     }
 
     public function login()
     {
         $client = new Client(['verify' => false]);
 
-        $req = $client->post($this->get_full_url('/auth/session'),[
+        $req = $client->post($this->get_full_url('/auth/session'), [
             'content-type' => 'application/json',
             'json' => [
                 'username' => $this->username,
@@ -65,11 +65,11 @@ class PritunlHelper
             ]
         ]);
 
-        if ($req->getStatusCode() == 401){
-//            Log::error('Pritunl login info is wrong !!!');
+        if ($req->getStatusCode() == 401) {
+            //            Log::error('Pritunl login info is wrong !!!');
         }
 
-        if ($req->getStatusCode() == 200){
+        if ($req->getStatusCode() == 200) {
             $this->store_login_session($req);
             $this->getCSRF();
         }
@@ -79,7 +79,7 @@ class PritunlHelper
     {
         $cookie = $req->getHeader('Set-Cookie');
 
-        $session = explode(';',explode('=',$cookie[0])[1])[0];
+        $session = explode(';', explode('=', $cookie[0])[1])[0];
 
         $this->session = $session;
 
@@ -88,7 +88,7 @@ class PritunlHelper
 
     public function getCookie()
     {
-        return CookieJar::fromArray(['session' => $this->session],$this->cookie_url);
+        return CookieJar::fromArray(['session' => $this->session], $this->cookie_url);
     }
 
     public function getCSRF()
@@ -96,22 +96,22 @@ class PritunlHelper
         $client = new Client(['verify' => false]);
 
         try {
-            $req = $client->request('GET',$this->get_full_url('/state'),[
+            $req = $client->request('GET', $this->get_full_url('/state'), [
                 'content-type' => 'application/json',
                 'cookies' => $this->getCookie()
             ]);
 
-            $data = json_decode($req->getBody(),true);
+            $data = json_decode($req->getBody(), true);
 
             $this->csrf = $data['csrf_token'];
 
             return true;
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return false;
         }
     }
 
-    public function SendRequest($method,$path,$data = null)
+    public function SendRequest($method, $path, $data = null)
     {
         $client = new Client(['verify' => false]);
 
@@ -122,18 +122,18 @@ class PritunlHelper
             ],
         ];
 
-        if ($data != null){
+        if ($data != null) {
             $options['json'] = $data;
         }
 
-        $req = $client->request($method,$this->get_full_url($path),$options);
+        $req = $client->request($method, $this->get_full_url($path), $options);
 
         $this->store_login_session($req);
 
-        return json_decode($req->getBody(),true);
+        return json_decode($req->getBody(), true);
     }
 
-    public function SendUnDecodeRequest($method,$path,$data = null)
+    public function SendUnDecodeRequest($method, $path, $data = null)
     {
         $client = new Client(['verify' => false]);
 
@@ -144,11 +144,11 @@ class PritunlHelper
             ],
         ];
 
-        if ($data != null){
+        if ($data != null) {
             $options['json'] = $data;
         }
 
-        $req = $client->request($method,$this->get_full_url($path),$options);
+        $req = $client->request($method, $this->get_full_url($path), $options);
 
         $this->store_login_session($req);
 
@@ -159,12 +159,12 @@ class PritunlHelper
 
     public function getOrganization($page = 0)
     {
-        return $this->SendRequest('get','/organization?page='.$page);
+        return $this->SendRequest('get', '/organization?page=' . $page);
     }
 
-    public function getUsers($organization_id,$page = 0)
+    public function getUsers($organization_id, $page = 0)
     {
-        return $this->SendRequest('get','/user/'.$organization_id.'?page='.$page);
+        return $this->SendRequest('get', '/user/' . $organization_id . '?page=' . $page);
     }
 
     public function getAllUsers($organization_id)
@@ -173,39 +173,39 @@ class PritunlHelper
 
         $users = [];
 
-        for ($page = 0;$page <= $pages;$page++){
-            $users = array_merge($users,$this->getUsers($organization_id,$page)['users']);
+        for ($page = 0; $page <= $pages; $page++) {
+            $users = array_merge($users, $this->getUsers($organization_id, $page)['users']);
         }
 
         return $users;
     }
 
-    public function getUserFiles($org_id,$user_id)
+    public function getUserFiles($org_id, $user_id)
     {
-        return $this->SendRequest('get','/key/'.$org_id.'/'.$user_id);
+        return $this->SendRequest('get', '/key/' . $org_id . '/' . $user_id);
     }
 
-    public function getUserTarFile($org_id,$user_id)
+    public function getUserTarFile($org_id, $user_id)
     {
-        return $this->SendUnDecodeRequest('get','/key/'.$org_id.'/'.$user_id.'.tar');
+        return $this->SendUnDecodeRequest('get', '/key/' . $org_id . '/' . $user_id . '.tar');
     }
 
-    public function create_user($username,$org_id,$password=null)
+    public function create_user($username, $org_id, $password = null)
     {
-        $data = $this->get_pritunl_new_user_array_data($username,$org_id,$password);
+        $data = $this->get_pritunl_new_user_array_data($username, $org_id, $password);
 
-        return $this->SendRequest('post','/user/'.$org_id,$data);
+        return $this->SendRequest('post', '/user/' . $org_id, $data);
     }
 
-    private function get_pritunl_new_user_array_data($username,$org_id,$password=null){
+    private function get_pritunl_new_user_array_data($username, $org_id, $password = null)
+    {
         return [
             "id" => null,
             "organization" => $org_id,
             "organization_name" => null,
             "name" => $username,
             "email" => null,
-            "groups" => [
-            ],
+            "groups" => [],
             "gravatar" => null,
             "audit" => null,
             "type" => null,
@@ -217,120 +217,115 @@ class PritunlHelper
             "otp_secret" => null,
             "servers" => null,
             "disabled" => null,
-            "network_links" => [
-            ],
+            "network_links" => [],
             "dns_mapping" => null,
             "bypass_secondary" => false,
             "client_to_client" => false,
-            "dns_servers" => [
-            ],
+            "dns_servers" => [],
             "dns_suffix" => "",
-            "port_forwarding" => [
-            ],
+            "port_forwarding" => [],
             "pin" => $password,
-            "mac_addresses" => [
-            ]
+            "mac_addresses" => []
         ];
     }
 
-    public function FindUserData($user_id,$org_id){
+    public function FindUserData($user_id, $org_id)
+    {
         $data = $this->getUsers($org_id);
 
         $all_pages = $data['page_total'];
         $page = 1;
         $find_user = null;
-        while (true){
+        while (true) {
             $page++;
 
-            foreach ($data['users'] as $user){
-                if ($user['id'] == $user_id){
+            foreach ($data['users'] as $user) {
+                if ($user['id'] == $user_id) {
                     $find_user = $user;
                     break;
                 }
             }
 
-            if ($find_user != null){
+            if ($find_user != null) {
                 break;
             }
 
-            if ($page > $all_pages){
+            if ($page > $all_pages) {
                 break;
             }
 
-            $data = $this->getUsers($org_id,$page);
+            $data = $this->getUsers($org_id, $page);
         }
 
         return $find_user;
     }
 
-    public function disableUser($user_id,$org_id)
+    public function disableUser($user_id, $org_id)
     {
-        $data = $this->FindUserData($user_id,$org_id);
+        $data = $this->FindUserData($user_id, $org_id);
 
         $data['disabled'] = true;
 
-        return $this->SendRequest('put','/user/'.$org_id.'/'.$user_id,$data)['disabled'];
+        return $this->SendRequest('put', '/user/' . $org_id . '/' . $user_id, $data)['disabled'];
     }
 
-    public function enableUser($user_id,$org_id)
+    public function enableUser($user_id, $org_id)
     {
-        $data = $this->FindUserData($user_id,$org_id);
+        $data = $this->FindUserData($user_id, $org_id);
 
         $data['disabled'] = false;
 
-        return !$this->SendRequest('put','/user/'.$org_id.'/'.$user_id,$data)['disabled'];
+        return !$this->SendRequest('put', '/user/' . $org_id . '/' . $user_id, $data)['disabled'];
     }
 
-    public function deleteUser($user_id,$org_id)
+    public function deleteUser($user_id, $org_id)
     {
-        $this->SendRequest('delete','/user/'.$org_id.'/'.$user_id);
+        $this->SendRequest('delete', '/user/' . $org_id . '/' . $user_id);
     }
 
     public function get_servers()
     {
-        return $this->SendRequest('get','/server?page=0');
+        return $this->SendRequest('get', '/server?page=0');
     }
 
     public function get_hosts($page = 0)
     {
-        return $this->SendRequest('get','/host?page='.$page);
+        return $this->SendRequest('get', '/host?page=' . $page);
     }
 
     public function get_usage($host_id)
     {
-        return $this->SendRequest('get','/host/'.$host_id.'/usage/1m');
+        return $this->SendRequest('get', '/host/' . $host_id . '/usage/1m');
     }
 
     public function get_server_organization($server_id)
     {
-        return $this->SendRequest('get','/server/'.$server_id.'/organization');
+        return $this->SendRequest('get', '/server/' . $server_id . '/organization');
     }
 
     public function get_output($server_id)
     {
-        return $this->SendRequest('get','/server/'.$server_id.'/output');
+        return $this->SendRequest('get', '/server/' . $server_id . '/output');
     }
 
     public static function get_users_action_from_output($output)
     {
         $connected = [];
         $disconnected = [];
-        foreach ($output as $text){
-            $discon = explode('User disconnected user_id=',$text);
+        foreach ($output as $text) {
+            $discon = explode('User disconnected user_id=', $text);
 
-            if (count($discon) > 1){
+            if (count($discon) > 1) {
                 $disconnected[] = $discon[1];
-            }else{
-                $con = explode('User connected user_id=',$text);
+            } else {
+                $con = explode('User connected user_id=', $text);
 
-                if (count($con) > 1){
+                if (count($con) > 1) {
                     $connected[] = $con[1];
                 }
             }
         }
 
-        return [$connected,$disconnected];
+        return [$connected, $disconnected];
     }
-
 }
-
