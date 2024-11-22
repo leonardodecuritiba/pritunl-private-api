@@ -7,14 +7,14 @@ use GuzzleHttp\Psr7\Response;
 
 class PritunlHelper
 {
+
+    private $username, $password, $url, $session, $csrf, $cookie_url;
+    private $client;
+
     public static function get_instance($data)
     {
         return new self($data['username'], $data['password'], $data['base_url'], $data['url']);
     }
-
-    private $username, $password, $url, $session, $csrf, $cookie_url;
-
-    private $client;
 
     public function __construct($username, $password, $url, $cookie_url)
     {
@@ -65,6 +65,8 @@ class PritunlHelper
             ]
         ]);
 
+        dd($req);
+
         if ($req->getStatusCode() == 401) {
             //            Log::error('Pritunl login info is wrong !!!');
         }
@@ -78,11 +80,8 @@ class PritunlHelper
     public function store_login_session(Response $req)
     {
         $cookie = $req->getHeader('Set-Cookie');
-
         $session = explode(';', explode('=', $cookie[0])[1])[0];
-
         $this->session = $session;
-
         $this->store_session($session);
     }
 

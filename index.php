@@ -1,6 +1,6 @@
 <?php
 require './PritunlHelper.php'; // Ensure the PritunlHelper class is included
-$pritunl = new PritunlHelper('username', 'password', 'https://redeprivada.tec.br:7443', 'redeprivada.tec.br:7443');
+$pritunl = new PritunlHelper('username', 'password', 'https://teste.com', 'teste.com');
 
 $organization_id = 1;
 //Get all users of an organization
